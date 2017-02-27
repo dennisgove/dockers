@@ -1,0 +1,79 @@
+version: '3'
+services:
+  zk1:
+    image: zookeeper
+    container_name: zk1
+    restart: always
+    ports:
+      - 20001:2181
+    volumes:
+      - ./zookeeper/zk1/data:/data
+      - ./zookeeper/shared/conf:/conf
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zk1:2888:3888 server.2=zk2:2888:3888 server.3=zk3:2888:3888
+
+  zk2:
+    image: zookeeper
+    container_name: zk2
+    restart: always
+    ports:
+      - 20002:2181
+    volumes:
+      - ./zookeeper/zk2/data:/data
+      - ./zookeeper/shared/conf:/conf
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zk1:2888:3888 server.2=zk2:2888:3888 server.3=zk3:2888:3888
+
+  zk3:
+    image: zookeeper
+    container_name: zk3
+    restart: always
+    ports:
+      - 20003:2181
+    volumes:
+      - ./zookeeper/zk3/data:/data
+      - ./zookeeper/shared/conf:/conf
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zk1:2888:3888 server.2=zk2:2888:3888 server.3=zk3:2888:3888
+
+  solr1:
+    image: solr
+    container_name: solr1
+    ports:
+      - "30001:8983"
+    volumes:
+      - ./solr/solr1/home:/home
+    links:
+      - zk1
+      - zk2
+      - zk3
+    command: /opt/solr/bin/solr start -f -z zk1:2181,zk2:2181,zk3:2181 -s /home
+
+  solr2:
+    image: solr
+    container_name: solr2
+    ports:
+      - "30002:8983"
+    volumes:
+      - ./solr/solr2/home:/home
+    links:
+      - zk1
+      - zk2
+      - zk3
+    command: /opt/solr/bin/solr start -f -z zk1:2181,zk2:2181,zk3:2181 -s /home
+
+  solr3:
+    image: solr
+    container_name: solr3
+    ports:
+      - "30003:8983"
+    volumes:
+      - ./solr/solr3/home:/home
+    links:
+      - zk1
+      - zk2
+      - zk3
+    command: /opt/solr/bin/solr start -f -z zk1:2181,zk2:2181,zk3:2181 -s /home
